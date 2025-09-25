@@ -3,7 +3,6 @@ import URLButtons from './URLButtons';
 import { Box } from '../components/Box';
 import * as Label from '@radix-ui/react-label';
 import { useAuth } from '@crossmint/client-sdk-react-ui';
-import { useFrameContext } from '../providers/FarcasterContextProvider';
 import type { UrlButton, UrlButtonErrors } from '../types';
 
 const Form = ({
@@ -18,26 +17,14 @@ const Form = ({
   setUrlButtons,
 }: any) => {
   const { user } = useAuth();
-  const { context } = useFrameContext();
   const [showOptionalField, setShowOptionalField] = useState(false);
   const [usernameError, setUsernameError] = useState('');
   const [bioError, setBioError] = useState('');
-  const [isInitialUsername, setIsInitialUsername] = useState(false);
   const [isInitialBio, setIsInitialBio] = useState(false);
 
   const [urlButtonErrors, setUrlButtonErrors] = useState<
     { id: string; title: string; url: string }[]
   >([{ id: '', title: '', url: '' }]);
-
-  useEffect(() => {
-    if (
-      user?.farcaster?.username ||
-      (context?.user.username && !isInitialUsername)
-    ) {
-      setUserName(user?.farcaster?.username ?? context?.user.username);
-      setIsInitialUsername(true);
-    }
-  }, [user, context?.user, isInitialUsername, setUserName]);
 
   useEffect(() => {
     if (user?.farcaster?.bio && !isInitialBio) {

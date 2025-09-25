@@ -54,13 +54,8 @@ export default function NavBar() {
                   }}
                 >
                   <Avatar.Root className='w-8 h-8 rounded-full overflow-hidden'>
-                    <Avatar.Image
-                      src={user?.farcaster?.pfpUrl}
-                      alt='User profile'
-                      className='w-full h-full object-cover'
-                    />
-                    <Avatar.Fallback className='w-full h-full bg-gray-300 flex items-center justify-center'>
-                      {user?.farcaster?.displayName?.charAt(0) || 'U'}
+                    <Avatar.Fallback className='w-full h-full font-bold bg-gray-300 flex items-center justify-center'>
+                      {user?.email?.charAt(0).toUpperCase() || 'U'}
                     </Avatar.Fallback>
                   </Avatar.Root>
                 </button>
@@ -74,22 +69,12 @@ export default function NavBar() {
                 >
                   <DropdownMenu.Item className='flex items-center gap-3 px-3 py-2 text-sm outline-none cursor-default rounded-sm hover:bg-gray-100'>
                     <Avatar.Root className='w-8 h-8 rounded-full overflow-hidden'>
-                      <Avatar.Image
-                        src={user?.farcaster?.pfpUrl}
-                        alt='User Profile'
-                        className='w-full h-full object-cover'
-                      />
                       <Avatar.Fallback className='w-full h-full bg-gray-300 flex items-center justify-center'>
-                        {user?.farcaster?.displayName?.charAt(0) || 'U'}
+                        {user?.email?.charAt(0).toUpperCase() || 'U'}
                       </Avatar.Fallback>
                     </Avatar.Root>
                     <Box>
-                      <Box className='font-medium text-sm'>
-                        {user?.farcaster?.displayName}
-                      </Box>
-                      <Box className='text-xs text-gray-500'>
-                        {user?.farcaster?.username}
-                      </Box>
+                      <Box className='font-medium text-sm'>{user?.email}</Box>
                     </Box>
                   </DropdownMenu.Item>
 

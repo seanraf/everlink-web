@@ -8,14 +8,12 @@ import Light from './previews/Light';
 import Uploader from './Uploader';
 import Minter from './Minter';
 import { useAuth } from '@crossmint/client-sdk-react-ui';
-import { useFrameContext } from '../providers/FarcasterContextProvider';
 import LinearStepper from '../components/LinearStepper';
 import { SnackbarAlert } from '../components/SnackbarAlert';
 import type { UrlButton } from '../types';
 
 export default function EverlinkPages() {
   const { user } = useAuth();
-  const { context } = useFrameContext();
   const [activeStep, setActiveStep] = useState(0);
   const [userName, setUserName] = useState('');
   const [bio, setBio] = useState('');
@@ -44,8 +42,9 @@ export default function EverlinkPages() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              fid: user?.farcaster?.fid ?? context?.user?.fid,
-              username: user?.farcaster?.username ?? context?.user?.username,
+              provider: 'gmail',
+              id: user?.id,
+              email: user?.email,
             }),
           }
         );
@@ -67,10 +66,10 @@ export default function EverlinkPages() {
       }
     };
 
-    if (user || (context?.user && !isUserRegistered)) {
+    if (user || !isUserRegistered) {
       registerUser();
     }
-  }, [user, isUserRegistered, context?.user]);
+  }, [user, isUserRegistered]);
 
   const renderThemePreview = () => {
     switch (selectedTheme) {

@@ -32,13 +32,7 @@ export default function LandingPage() {
               onClick={login}
               type='button'
             >
-              <img
-                src={'/FarcasterLogo.svg'}
-                alt='Icon'
-                width={25.86}
-                height={24}
-              />
-              Connect with Farcaster
+              Login / Register
             </button>
           )}
         </Box>

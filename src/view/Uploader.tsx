@@ -5,7 +5,6 @@ import Light from './previews/Light';
 import ReactDOMServer from 'react-dom/server';
 import { useAuth } from '@crossmint/client-sdk-react-ui';
 import type { DomainContent, UploaderProps } from '../types';
-import { useFrameContext } from '../providers/FarcasterContextProvider';
 import { Box } from '../components/Box';
 
 export default function Uploader({
@@ -19,7 +18,6 @@ export default function Uploader({
   setLoading,
 }: UploaderProps) {
   const { user } = useAuth();
-  const { context } = useFrameContext();
   const backendBase = import.meta.env.VITE_BACKEND_BASE_URL as string;
   const everlandHostingBase = import.meta.env
     .VITE_4EVERLAND_HOSTING_BASE_URL as string;
@@ -28,14 +26,14 @@ export default function Uploader({
   const frontendBaseUrl = import.meta.env.VITE_FRONTEND_BASE_URL as string;
   const backendBaseUrl = import.meta.env.VITE_BACKEND_BASE_URL as string;
   const shortIoUrl = import.meta.env.VITE_SHORT_IO_BASE_URL as string;
-  const domain = import.meta.env.VITE_DOMAIN_NAME as string;
+  const domain = import.meta.env.VITE_DOMAIN as string;
   const apiKey = import.meta.env.VITE_SHORT_IO_API_KEY as string;
 
   const saveDeploymentData = async (
     content: DomainContent,
-    farcasterId: string | number | undefined
+    id: string | number | undefined
   ) => {
-    if (!farcasterId) {
+    if (!id) {
       setSnackbar({
         open: true,
         message: 'Authentication Failed. Please try again.',
@@ -49,7 +47,8 @@ export default function Uploader({
         `${backendBase}/api/deploymentHistory/create`,
         {
           content,
-          farcasterId,
+          id,
+          provider: 'gmail',
         }
       );
       return response;
@@ -135,8 +134,8 @@ export default function Uploader({
       const content = uploadResponse?.data?.content;
       const taskId = content?.taskId;
       setDeploymentTaskId(taskId);
-      const farcasterId = user?.farcaster?.fid ?? context?.user?.fid;
-      await saveDeploymentData(content, farcasterId);
+      const authId = user?.id;
+      await saveDeploymentData(content, authId);
       const customUrlData = await generateCustomURL(taskId);
       await saveDomainData(
         taskId,
