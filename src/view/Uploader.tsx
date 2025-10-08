@@ -23,15 +23,17 @@ export default function Uploader({
     .VITE_4EVERLAND_HOSTING_BASE_URL as string;
   const everlandTokenId = import.meta.env.VITE_TOKEN_ID as string;
   const everlandProjectId = import.meta.env.VITE_PROJECT_ID as string;
-  const frontendBaseUrl = import.meta.env.VITE_FRONTEND_BASE_URL as string;
+  const everlandIPFSProjectId = import.meta.env.VITE_IPFS_PROJECT_ID as string;
   const backendBaseUrl = import.meta.env.VITE_BACKEND_BASE_URL as string;
+  const IPFSBaseUrl = import.meta.env.VITE_IPFS_BASE_URL as string;
   const shortIoUrl = import.meta.env.VITE_SHORT_IO_BASE_URL as string;
   const domain = import.meta.env.VITE_DOMAIN as string;
   const apiKey = import.meta.env.VITE_SHORT_IO_API_KEY as string;
 
   const saveDeploymentData = async (
-    content: DomainContent,
-    id: string | number | undefined
+    id: string | number | undefined,
+    arweaveContent: DomainContent,
+    ipfsContent: DomainContent
   ) => {
     if (!id) {
       setSnackbar({
@@ -46,9 +48,10 @@ export default function Uploader({
       const response = await axios.post(
         `${backendBase}/api/deploymentHistory/create`,
         {
-          content,
           id,
           provider: 'gmail',
+          arweaveContent,
+          ipfsContent,
         }
       );
       return response;
@@ -58,6 +61,7 @@ export default function Uploader({
   };
 
   const generateCustomURL = async (taskId: string) => {
+    console.log('Generating custom URL for taskId:', taskId);
     if (!taskId) {
       return;
     }
@@ -66,7 +70,7 @@ export default function Uploader({
       const response = await axios.post(
         shortIoUrl,
         {
-          originalURL: `${frontendBaseUrl}/${taskId}`,
+          originalURL: `${IPFSBaseUrl}/${taskId}`,
           domain,
         },
         {
@@ -115,14 +119,14 @@ export default function Uploader({
   };
 
   const uploadHTMLFile = async (file: Blob) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('projectId', everlandProjectId);
+    const arweaveFormData = new FormData();
+    arweaveFormData.append('file', file);
+    arweaveFormData.append('projectId', everlandProjectId);
 
     try {
-      const uploadResponse = await axios.post(
+      const arweaveUploadResponse = await axios.post(
         `${everlandHostingBase}/deploy`,
-        formData,
+        arweaveFormData,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -131,14 +135,34 @@ export default function Uploader({
         }
       );
 
-      const content = uploadResponse?.data?.content;
-      const taskId = content?.taskId;
-      setDeploymentTaskId(taskId);
+      const arweaveContent = arweaveUploadResponse?.data?.content;
+      const arweaveTaskId = arweaveContent?.taskId;
+
+      const ipfsFormData = new FormData();
+      ipfsFormData.append('file', file);
+      ipfsFormData.append('projectId', everlandIPFSProjectId);
+
+      const ipfsUploadResponse = await axios.post(
+        `${everlandHostingBase}/deploy`,
+        ipfsFormData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            token: everlandTokenId,
+          },
+        }
+      );
+
+      const ipfsContent = ipfsUploadResponse?.data?.content;
+      const ipfsTaskId = ipfsContent?.taskId;
+      const ipfsFileHash = ipfsContent?.fileHash;
+
+      setDeploymentTaskId({ arweaveTaskId, ipfsTaskId });
       const authId = user?.id;
-      await saveDeploymentData(content, authId);
-      const customUrlData = await generateCustomURL(taskId);
+      await saveDeploymentData(authId, arweaveContent, ipfsContent);
+      const customUrlData = await generateCustomURL(ipfsFileHash);
       await saveDomainData(
-        taskId,
+        arweaveTaskId,
         customUrlData?.shortURL,
         customUrlData?.idString
       );

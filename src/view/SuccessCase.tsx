@@ -55,7 +55,7 @@ export default function SuccessCase() {
     <Box>
       {!loading ? (
         <>
-          {deploymentRecord.taskId ? (
+          {deploymentRecord?.arweaveTaskId || deploymentRecord.ipfsTaskId ? (
             <ThankYou customURL={customURL} loading={loading} />
           ) : (
             <Box
