@@ -3,7 +3,7 @@ import URLButtons from './URLButtons';
 import { Box } from '../components/Box';
 import * as Label from '@radix-ui/react-label';
 import { useAuth } from '@crossmint/client-sdk-react-ui';
-import type { UrlButton, UrlButtonErrors } from '../types';
+import type { FormPropsType, UrlButton, UrlButtonErrors } from '../types';
 
 const Form = ({
   setActiveStep,
@@ -15,7 +15,7 @@ const Form = ({
   setAnalyticsTag,
   urlButtons,
   setUrlButtons,
-}: any) => {
+}: FormPropsType) => {
   const { user } = useAuth();
   const [showOptionalField, setShowOptionalField] = useState(false);
   const [usernameError, setUsernameError] = useState('');

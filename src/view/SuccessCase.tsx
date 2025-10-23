@@ -3,11 +3,13 @@ import axios from 'axios';
 import { Box } from '../components/Box';
 import Loader from './Loader';
 import ThankYou from './ThankYou';
+import type { DeploymentRecord } from '../types';
 
 export default function SuccessCase() {
   const backendBaseUrl = import.meta.env.VITE_BACKEND_BASE_URL as string;
-  const [taskId, setTaskId] = useState<string | undefined>(undefined);
-  const [deploymentRecord, setDeploymentRecord] = useState<any>({});
+  const [ipfsTaskId, setIpfsTaskId] = useState<string | undefined>(undefined);
+  const [deploymentRecord, setDeploymentRecord] =
+    useState<DeploymentRecord | null>(null);
   const [customURL, setCustomURL] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -16,7 +18,7 @@ export default function SuccessCase() {
   const fetchDeploymentData = async () => {
     try {
       const response = await axios.get(
-        `${backendBaseUrl}/api/deploymentHistory/${taskId}`
+        `${backendBaseUrl}/api/deploymentHistory/${ipfsTaskId}`
       );
       const deploymentRecords = response.data.records;
       if (deploymentRecords) {
@@ -40,22 +42,22 @@ export default function SuccessCase() {
       const pathSegments = pathname.split('/');
       const successIndex = pathSegments.indexOf('success');
       if (successIndex !== -1 && pathSegments.length > successIndex + 1) {
-        setTaskId(pathSegments[successIndex + 1]);
+        setIpfsTaskId(pathSegments[successIndex + 1]);
       }
     }
   }, [pathname]);
 
   useEffect(() => {
-    if (taskId) {
+    if (ipfsTaskId) {
       fetchDeploymentData();
     }
-  }, [taskId]);
+  }, [ipfsTaskId]);
 
   return (
     <Box>
       {!loading ? (
         <>
-          {deploymentRecord.taskId ? (
+          {deploymentRecord?.arweaveUrl || deploymentRecord?.ipfsTaskId ? (
             <ThankYou customURL={customURL} loading={loading} />
           ) : (
             <Box
