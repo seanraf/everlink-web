@@ -18,10 +18,7 @@ export default function EverlinkPages() {
   const [userName, setUserName] = useState('');
   const [bio, setBio] = useState('');
   const [analyticsTag, setAnalyticsTag] = useState('');
-  const [deploymentTaskId, setDeploymentTaskId] = useState<{
-    arweaveTaskId?: string | undefined;
-    ipfsTaskId?: string | undefined;
-  }>({});
+  const [deploymentTaskId, setDeploymentTaskId] = useState('');
   const [selectedTheme, setSelectedTheme] = useState('Dark Theme');
   const [urlButtons, setUrlButtons] = useState<UrlButton[]>([
     { id: '1', title: '', url: 'https://' },

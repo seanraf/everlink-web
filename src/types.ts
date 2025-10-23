@@ -46,12 +46,7 @@ export type UploaderProps = {
   userName: string;
   bio: string;
   urlButtons: UrlButton[];
-  setDeploymentTaskId: React.Dispatch<
-    React.SetStateAction<{
-      arweaveTaskId?: string | undefined;
-      ipfsTaskId?: string | undefined;
-    }>
-  >;
+  setDeploymentTaskId: React.Dispatch<React.SetStateAction<string>>;
   setSnackbar: React.Dispatch<
     React.SetStateAction<{
       open: boolean;
@@ -64,7 +59,8 @@ export type UploaderProps = {
 
 export type DomainContent = {
   domainList: string[];
-  taskId: string;
+  arweaveContent: string;
+  ipfsContent: string;
 };
 
 export type MinterProps = {
@@ -88,9 +84,39 @@ export type FrameContextType = {
   };
 };
 
+export type FormPropsType = {
+  activeStep?: number;
+  setActiveStep: React.Dispatch<React.SetStateAction<number>>;
+  userName: string;
+  setUserName: React.Dispatch<React.SetStateAction<string>>;
+  bio: string;
+  setBio: React.Dispatch<React.SetStateAction<string>>;
+  analyticsTag: string;
+  setAnalyticsTag: React.Dispatch<React.SetStateAction<string>>;
+  urlButtons: UrlButton[];
+  setUrlButtons: React.Dispatch<React.SetStateAction<UrlButton[]>>;
+};
+
 export type ContextType = {
   context: FrameContextType | undefined;
   setContext: React.Dispatch<
     React.SetStateAction<FrameContextType | undefined>
   >;
+};
+
+export type DeploymentRecord = {
+  _id: string;
+  arweaveTransactionId: string;
+  arweaveUrl: string;
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
+  createdBy: string;
+  customUrl: string;
+  deployed: boolean;
+  ipfsDomainList: string[];
+  ipfsHash: string;
+  ipfsTaskId: string;
+  provider: string;
+  shortUrlId: string;
+  __v: number;
 };

@@ -6,6 +6,7 @@ import ReactDOMServer from 'react-dom/server';
 import { useAuth } from '@crossmint/client-sdk-react-ui';
 import type { DomainContent, UploaderProps } from '../types';
 import { Box } from '../components/Box';
+import { uploadToArweave } from '../utils/uploadToArweave';
 
 export default function Uploader({
   setActiveStep,
@@ -22,7 +23,6 @@ export default function Uploader({
   const everlandHostingBase = import.meta.env
     .VITE_4EVERLAND_HOSTING_BASE_URL as string;
   const everlandTokenId = import.meta.env.VITE_TOKEN_ID as string;
-  const everlandProjectId = import.meta.env.VITE_PROJECT_ID as string;
   const everlandIPFSProjectId = import.meta.env.VITE_IPFS_PROJECT_ID as string;
   const backendBaseUrl = import.meta.env.VITE_BACKEND_BASE_URL as string;
   const IPFSBaseUrl = import.meta.env.VITE_IPFS_BASE_URL as string;
@@ -31,8 +31,8 @@ export default function Uploader({
   const apiKey = import.meta.env.VITE_SHORT_IO_API_KEY as string;
 
   const saveDeploymentData = async (
-    id: string | number | undefined,
-    arweaveContent: DomainContent,
+    id: string | undefined,
+    arweaveTransactionId: string | undefined,
     ipfsContent: DomainContent
   ) => {
     if (!id) {
@@ -50,7 +50,7 @@ export default function Uploader({
         {
           id,
           provider: 'gmail',
-          arweaveContent,
+          arweaveTransactionId,
           ipfsContent,
         }
       );
@@ -87,11 +87,12 @@ export default function Uploader({
   };
 
   const saveDomainData = async (
-    taskId: string,
+    ipfsTaskId: string | undefined,
+    arweaveTransactionId: string | undefined,
     latestLink: string,
     shortIoId: string
   ) => {
-    if (!taskId || !latestLink || !shortIoId) {
+    if (!ipfsTaskId || !latestLink || !shortIoId) {
       setSnackbar({
         open: true,
         message: 'Oops! Something went wrong. Please try again.',
@@ -102,9 +103,10 @@ export default function Uploader({
     }
 
     try {
-      await axios.put(`${backendBaseUrl}/api/deploymentHistory/${taskId}`, {
+      await axios.put(`${backendBaseUrl}/api/deploymentHistory/${ipfsTaskId}`, {
         customUrl: latestLink,
         shortUrlId: shortIoId,
+        arweaveUrl: `https://arweave.net/${arweaveTransactionId}`,
       });
       setLoading(false);
     } catch (error) {
@@ -118,28 +120,13 @@ export default function Uploader({
     }
   };
 
-  const uploadHTMLFile = async (file: Blob) => {
-    const arweaveFormData = new FormData();
-    arweaveFormData.append('file', file);
-    arweaveFormData.append('projectId', everlandProjectId);
-
+  const uploadHTMLFile = async (blob: Blob, zipBlob: Blob) => {
     try {
-      const arweaveUploadResponse = await axios.post(
-        `${everlandHostingBase}/deploy`,
-        arweaveFormData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            token: everlandTokenId,
-          },
-        }
-      );
-
-      const arweaveContent = arweaveUploadResponse?.data?.content;
-      const arweaveTaskId = arweaveContent?.taskId;
+      const arweaveResponse = await uploadToArweave(blob);
+      const arweaveTransactionId = arweaveResponse?.transactionId;
 
       const ipfsFormData = new FormData();
-      ipfsFormData.append('file', file);
+      ipfsFormData.append('file', zipBlob);
       ipfsFormData.append('projectId', everlandIPFSProjectId);
 
       const ipfsUploadResponse = await axios.post(
@@ -156,13 +143,13 @@ export default function Uploader({
       const ipfsContent = ipfsUploadResponse?.data?.content;
       const ipfsTaskId = ipfsContent?.taskId;
       const ipfsFileHash = ipfsContent?.fileHash;
-
-      setDeploymentTaskId({ arweaveTaskId, ipfsTaskId });
+      setDeploymentTaskId(ipfsTaskId);
       const authId = user?.id;
-      await saveDeploymentData(authId, arweaveContent, ipfsContent);
+      await saveDeploymentData(authId, arweaveTransactionId, ipfsContent);
       const customUrlData = await generateCustomURL(ipfsFileHash);
       await saveDomainData(
-        arweaveTaskId,
+        ipfsTaskId,
+        arweaveTransactionId,
         customUrlData?.shortURL,
         customUrlData?.idString
       );
@@ -225,7 +212,7 @@ export default function Uploader({
 
     const zipBlob = await zip.generateAsync({ type: 'blob' });
 
-    uploadHTMLFile(zipBlob);
+    uploadHTMLFile(blob, zipBlob);
   };
 
   const handleBack = () => setActiveStep(0);
